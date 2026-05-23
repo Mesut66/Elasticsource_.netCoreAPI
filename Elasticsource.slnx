@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="Elastic.BlogWeb/Elastic.BlogWeb.csproj" Id="884f7150-272d-4f8a-9232-7ff998f5a072" />
   <Project Path="Elasticsource.API/Elasticsource.API.csproj" />
 </Solution>
