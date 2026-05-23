@@ -6,7 +6,7 @@ namespace Elastic.BlogWeb.Repository
     public class BlogRepository
     {
         private readonly ElasticsearchClient _client;
-        private const string indexName = "blogposts";
+        private const string indexName = "blog";
 
         public BlogRepository(ElasticsearchClient client)
         {

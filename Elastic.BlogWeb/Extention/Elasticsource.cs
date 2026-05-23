@@ -17,7 +17,7 @@ namespace Elasticsource.API.Extention
             var password = configuration.GetSection("Elasticsearch")["Password"];
 
             var settings = new ElasticsearchClientSettings(new Uri(configuration.GetSection("Elasticsearch")["Url"]!)).Authentication(new BasicAuthentication(userName!, password!));
-               
+
             var client = new ElasticsearchClient(settings);
 
             services.AddSingleton(client);

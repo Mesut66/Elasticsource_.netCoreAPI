@@ -9,7 +9,7 @@ namespace Elastic.BlogWeb.ViewModel
         public string Title { get; set; } = null!;
         [Required]
         public string Content { get; set; } = null!;
-        public List<string> Tags { get; set; } = new();
-        public Guid UserId { get; set; }
+        public string  Tags { get; set; } = null!;
+
     }
 }

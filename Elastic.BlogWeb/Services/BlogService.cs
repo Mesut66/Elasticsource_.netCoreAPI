@@ -18,7 +18,7 @@ namespace Elastic.BlogWeb.Services
             {
                 Title = blog.Title,
                 Content = blog.Content,
-                Tags = blog.Tags.ToArray(),
+                Tags = blog.Tags.Split(","),
                 UserId = Guid.NewGuid()
             });
         }

@@ -1,7 +1,12 @@
+using Elastic.BlogWeb.Repository;
+using Elastic.BlogWeb.Services;
 using Elasticsource.API.Extention;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddElasticsource(builder.Configuration);
+
+builder.Services.AddScoped<BlogRepository>();
+builder.Services.AddScoped<BlogService>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -15,6 +20,7 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 app.UseRouting();
