@@ -1,25 +1,49 @@
-﻿using Elasticsource.API.DTO;
+﻿using Elastic.Clients.Elasticsearch;
+using Elasticsource.API.DTO;
 using Elasticsource.API.Models;
-using Nest;
 using System.Collections.Immutable;
 
 namespace Elasticsource.API.Repositories
 {
     public class ProductRepository
     {
-        private readonly ElasticClient _elasticClient;
+        private readonly ElasticsearchClient _elasticClient;
+        private readonly ILogger<ProductRepository> _logger;
         private const string indexName = "products";
 
-        public ProductRepository(ElasticClient elasticClient)
+        public ProductRepository(ElasticsearchClient elasticClient, ILogger<ProductRepository> logger)
         {
             _elasticClient = elasticClient;
+            _logger = logger;
         }
         public async Task<Product> SaveAsync(Product product)
         {
-
             product.Created = DateTime.Now;
-            var response = await _elasticClient.IndexAsync(product, x=> x.Index(indexName));//es de save yoktur Index vardır.Index save demektir.İndexleme işlemi yapar ve kaydeder.
-            if (!response.IsValid) return null;//fast fail demek bu yazım şekli.İf bloğu tek satır ise süslü parantez kullanmaya gerek yoktur.
+
+            // Elasticsearch için color'ı int olarak gönder (enum value)
+            var docToIndex = new
+            {
+                product.Id,
+                product.Name,
+                product.Price,
+                product.Stock,
+                product.Created,
+                product.Updated,
+                Feature = product.Feature != null ? new
+                {
+                    product.Feature.Width,
+                    product.Feature.Height,
+                    Color = (int)product.Feature.Color
+                } : (object)null
+            };
+
+            var response = await _elasticClient.IndexAsync(docToIndex, x => x.Index(indexName).Id(product.Id ?? Guid.NewGuid().ToString()));
+
+            if (!response.IsSuccess())
+            {
+                _logger.LogError($"Elasticsearch Index hatası: {response.ApiCallDetails?.DebugInformation ?? "Bilinmeyen hata"}");
+                return null;
+            }
 
             product.Id = response.Id;
             return product;
@@ -37,7 +61,7 @@ namespace Elasticsource.API.Repositories
         {
             var response = await _elasticClient.GetAsync<Product>(id, i => i.Index(indexName));
 
-            if (!response.IsValid) return null;
+            if (!response.IsSuccess()) return null;
 
             response.Source.Id = response.Id;
 
@@ -46,8 +70,8 @@ namespace Elasticsource.API.Repositories
 
         public async Task<bool> UpdateAsync(ProductUpdateDto updateProduct)
         {
-            var response = await _elasticClient.UpdateAsync<Product, ProductUpdateDto>(updateProduct.Id, u => u.Index(indexName).Doc(updateProduct));
-            return response.IsValid;
+            var response = await _elasticClient.UpdateAsync<Product, ProductUpdateDto>(indexName,updateProduct.Id, u => u.Doc(updateProduct));
+            return response.IsSuccess();
 
         }
 

@@ -1,5 +1,4 @@
 ﻿using Elasticsource.API.DTO;
-using Nest;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
@@ -7,7 +6,6 @@ namespace Elasticsource.API.Models
 {
     public class Product
     {
-        [PropertyName("_id")]//aşağıdaki id buna karşılık gelecek es yi haberdar ederiz ben id göndermezsen bunu otomatik olarak oluşturur ama ben id göndermek istiyorum o zaman bu şekilde yaparız
         public string Id { get; set; } = null!;//Bu ıd bizim asıl datalarda bulunmuyor
         public string Name { get; set; } = null!;//null olamaz demek için null! ekledik
         public decimal Price { get; set; }

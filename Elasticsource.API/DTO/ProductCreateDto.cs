@@ -1,5 +1,4 @@
 ﻿using Elasticsource.API.Models;
-using Nest;
 
 namespace Elasticsource.API.DTO
 {
@@ -9,6 +8,7 @@ namespace Elasticsource.API.DTO
         {
             return new Product
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = name,
                 Price = price,
                 Stock = stock,

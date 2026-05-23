@@ -1,4 +1,5 @@
-﻿using Elasticsource.API.DTO;
+﻿using Elastic.Clients.Elasticsearch;
+using Elasticsource.API.DTO;
 using Elasticsource.API.Models;
 using Elasticsource.API.Repositories;
 using Microsoft.OpenApi;
@@ -32,13 +33,20 @@ namespace Elasticsource.API.Services
 
         public async Task<ResponseDto<ProductDto>> SaveAsync(ProductCreateDto request)
         {
-            var response = await _productRepository.SaveAsync(request.CreateProduct());
+            try
+            {
+                var response = await _productRepository.SaveAsync(request.CreateProduct());
 
-            if (response == null)
-                return ResponseDto<ProductDto>.Fail(new List<string> { "Kayıt esnasında hata meydana geldi" }, HttpStatusCode.InternalServerError);
+                if (response == null)
+                    return ResponseDto<ProductDto>.Fail(new List<string> { "Kayıt esnasında hata meydana geldi" }, HttpStatusCode.InternalServerError);
 
-
-            return ResponseDto<ProductDto>.Success(response.CreateDto(), HttpStatusCode.Created);
+                return ResponseDto<ProductDto>.Success(response.CreateDto(), HttpStatusCode.Created);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "SaveAsync hatası");
+                return ResponseDto<ProductDto>.Fail(new List<string> { ex.Message }, HttpStatusCode.InternalServerError);
+            }
         }
         public async Task<ImmutableList<ProductDto>> GetAllAsync()
         {
@@ -76,18 +84,19 @@ namespace Elasticsource.API.Services
             var deleteResponse = await _productRepository.DeleteAsync(id);
 
 
-            if (!deleteResponse.IsValid && deleteResponse.Result == Nest.Result.NotFound)
+            if (!deleteResponse.IsValidResponse && deleteResponse.Result == Result.NotFound)
             {
                 return ResponseDto<bool>.Fail(new List<string> { "Silmeye çalıştığınız Ürün bulunamadı" }, HttpStatusCode.NotFound);
             }
 
             //hataları loglayacağız es burada bize yardımcı oluyor. Yukarda Ilogger'ı inject edip loglama yapabiliriz.
-            if (!deleteResponse.IsValid)
+            if (!deleteResponse.IsValidResponse)
             {
-                _logger.LogError(deleteResponse.OriginalException, deleteResponse.ServerError.Error.ToString());
+                deleteResponse.TryGetOriginalException(out Exception? ex);
+                _logger.LogError(ex, deleteResponse.ElasticsearchServerError.Error.ToString());
             }
 
-            if (!deleteResponse.IsValid)
+            if (!deleteResponse.IsSuccess())
                 return ResponseDto<bool>.Fail(new List<string> { "Silme esnasında bir hata oluştu" }, HttpStatusCode.InternalServerError);
 
 

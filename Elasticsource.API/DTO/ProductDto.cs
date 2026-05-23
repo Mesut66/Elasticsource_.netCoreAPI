@@ -1,5 +1,4 @@
 ﻿using Elasticsource.API.Models;
-using Nest;
 
 namespace Elasticsource.API.DTO
 {

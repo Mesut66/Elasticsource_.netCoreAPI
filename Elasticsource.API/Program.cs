@@ -1,5 +1,4 @@
-using Elasticsearch.Net;
-using Nest;
+
 using Elasticsource.API.Extention;
 using Elasticsource.API.Services;
 using Elasticsource.API.Repositories;
@@ -14,13 +13,6 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<ProductRepository>();
 
-builder.Services.AddSingleton<IElasticClient>(sp =>
-{
-    var settings = new ConnectionSettings(
-        new Uri(builder.Configuration["Elasticsearch:Url"]!));
-
-    return new ElasticClient(settings);
-});
 // Add Swagger/Swashbuckle
 builder.Services.AddSwaggerGen();
 
