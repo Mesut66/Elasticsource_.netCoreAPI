@@ -22,5 +22,10 @@ namespace Elastic.BlogWeb.Services
                 UserId = Guid.NewGuid()
             });
         }
+
+        public  Task<List<Blog>> SearchAsync(string text)
+        {
+            return  _repository.SearchAsync(text);
+        }
     }
 }

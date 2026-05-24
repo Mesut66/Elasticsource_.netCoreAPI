@@ -1,4 +1,5 @@
-﻿using Elastic.BlogWeb.Services;
+﻿using Elastic.BlogWeb.Models;
+using Elastic.BlogWeb.Services;
 using Elastic.BlogWeb.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,17 @@ namespace Elastic.BlogWeb.Controllers
         public BlogController(BlogService blogService)
         {
             _blogService = blogService;
+        }
+
+        public IActionResult Search()
+        {
+            return View(new List<Blog>());
+        }
+        [HttpPost]
+        public async Task<IActionResult> Search(string searchText)
+        {
+            var blogList = await _blogService.SearchAsync(searchText);
+            return View(blogList);
         }
         public IActionResult Save()
         {
