@@ -21,7 +21,7 @@ namespace Elastic.BlogWeb.Repository
             var response = await _client.IndexAsync(blog, x => x.Index(indexName));
 
             if (!response.IsValidResponse) return null;
-   
+
 
             blog.Id = response.Id;
             return blog;
@@ -33,11 +33,11 @@ namespace Elastic.BlogWeb.Repository
             //Burası Elasticsearch in .net taki kodlamasında kullanılan bir yapıdır. 
             List<Action<QueryDescriptor<Blog>>> ListQuery = new();
 
-            
+
             Action<QueryDescriptor<Blog>> matchAll = (q) => q.MatchAll();//Elasticsearch’teki tüm dökümanları getirir.
 
 
-            Action<QueryDescriptor<Blog>> matchContent = (q) => q.Match(m => m.Field(f=> f.Content).Query(text));//Match Full-text arama yapar
+            Action<QueryDescriptor<Blog>> matchContent = (q) => q.Match(m => m.Field(f => f.Content).Query(text));//Match Full-text arama yapar
 
 
             Action<QueryDescriptor<Blog>> titleMatchBoolPrefix = (q) => q.MatchBoolPrefix(m => m.Field(f => f.Content).Query(text));//MatchBoolPrefixPrefix/auto complete araması yapar
@@ -61,14 +61,12 @@ namespace Elastic.BlogWeb.Repository
             }
 
             //title ve content int göre arama yapılacak
-            var result = await _client.SearchAsync<Blog>(s => s
-                .Index(indexName)
-                .Size(1000)
-                .Query(q => q.Bool(b => b.Should(//Should Elasticsearch’teki bool query içindeki OR mantığını temsil eder.
-                    ListQuery.ToArray()
-                ))));
+            var result = await _client.SearchAsync<Blog>(s => s.Index(indexName)
+                                                            .Size(1000)
+                                                            .Query(q => q.Bool(b => b.Should(ListQuery.ToArray()))));
+                                                            //Should Elasticsearch’teki bool query içindeki OR mantığını temsil eder.
 
-            foreach (var hit in result.Hits) 
+            foreach (var hit in result.Hits)
                 hit.Source.Id = hit.Id;
 
             return result.Documents.ToList();
