@@ -44,6 +44,10 @@ namespace Elastic.BlogWeb.Repository
 
             //Field Hangi alan (property/column) üzerinde arama yapacağını söyler.
 
+            //Tag üzerinde arama
+            Action<QueryDescriptor<Blog>> tagTerm = (q) => q.Term(t => t.Field(f => f.Tags).Value(text));
+
+
             //text boşsa tüm data gelsin
             if (string.IsNullOrEmpty(text))
             {
@@ -53,6 +57,7 @@ namespace Elastic.BlogWeb.Repository
             {
                 ListQuery.Add(matchContent);
                 ListQuery.Add(titleMatchBoolPrefix);
+                ListQuery.Add(tagTerm);
             }
 
             //title ve content int göre arama yapılacak
