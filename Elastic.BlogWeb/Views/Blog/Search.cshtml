@@ -16,7 +16,7 @@
 
             <form asp-action="Search" asp-controller="Blog" class="mt-4">
                 <div class="input-group input-group-lg">
-                    <input type="text" class="form-control" placeholder="Search blogs..." name="searchText" required>
+                    <input type="text" value="@ViewBag.SearchText" class="form-control" placeholder="Search blogs..." name="searchText" required>
                     <button class="btn btn-primary type="submit">Search</button>
                 </div>
             </form>

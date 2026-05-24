@@ -1,5 +1,6 @@
 ﻿using Elastic.BlogWeb.Models;
 using Elastic.Clients.Elasticsearch;
+using Elastic.Clients.Elasticsearch.QueryDsl;
 
 namespace Elastic.BlogWeb.Repository
 {
@@ -28,13 +29,38 @@ namespace Elastic.BlogWeb.Repository
 
         public async Task<List<Blog>> SearchAsync(string text)
         {
+
+            //Burası Elasticsearch in .net taki kodlamasında kullanılan bir yapıdır. 
+            List<Action<QueryDescriptor<Blog>>> ListQuery = new();
+
+            
+            Action<QueryDescriptor<Blog>> matchAll = (q) => q.MatchAll();//Elasticsearch’teki tüm dökümanları getirir.
+
+
+            Action<QueryDescriptor<Blog>> matchContent = (q) => q.Match(m => m.Field(f=> f.Content).Query(text));//Match Full-text arama yapar
+
+
+            Action<QueryDescriptor<Blog>> titleMatchBoolPrefix = (q) => q.MatchBoolPrefix(m => m.Field(f => f.Content).Query(text));//MatchBoolPrefixPrefix/auto complete araması yapar
+
+            //Field Hangi alan (property/column) üzerinde arama yapacağını söyler.
+
+            //text boşsa tüm data gelsin
+            if (string.IsNullOrEmpty(text))
+            {
+                ListQuery.Add(matchAll);
+            }
+            else
+            {
+                ListQuery.Add(matchContent);
+                ListQuery.Add(titleMatchBoolPrefix);
+            }
+
             //title ve content int göre arama yapılacak
             var result = await _client.SearchAsync<Blog>(s => s
                 .Index(indexName)
                 .Size(1000)
-                .Query(q => q.Bool(b => b.Should(
-                    s => s.Match(m => m.Field(f => f.Content).Query(text)),
-                    s => s.MatchBoolPrefix(m => m.Field(f => f.Title).Query(text))
+                .Query(q => q.Bool(b => b.Should(//Should Elasticsearch’teki bool query içindeki OR mantığını temsil eder.
+                    ListQuery.ToArray()
                 ))));
 
             foreach (var hit in result.Hits) 

@@ -15,13 +15,16 @@ namespace Elastic.BlogWeb.Controllers
             _blogService = blogService;
         }
 
-        public IActionResult Search()
+        public async Task<IActionResult> Search()
         {
-            return View(new List<Blog>());
+            return View(await _blogService.SearchAsync(string.Empty));
         }
         [HttpPost]
         public async Task<IActionResult> Search(string searchText)
         {
+            //Arama yapılan textin sayfada  kaybolmaması için
+            ViewBag.SearchText = searchText;
+
             var blogList = await _blogService.SearchAsync(searchText);
             return View(blogList);
         }
